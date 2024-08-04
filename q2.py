@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 import time
 import datetime
-# Lidam com a conversão das datas em horas de maneira precisa e genérica
+# Parte da stdlib, lidam com a conversão das datas em horas de maneira precisa e genérica
 
 import numpy as np
 
@@ -31,12 +31,23 @@ def extract_columns(file: io.TextIOWrapper) -> tuple[list, list]:
     return dates, wvht
 
 def plot_wvht(dates: list, wvht: list) -> None:
-    plt.scatter(dates, wvht)
+    plt.title("Valores de Wvht no tempo")
+
+    plt.grid(zorder=0)
+    plt.scatter(dates, wvht, zorder=3)
+
     plt.xticks(rotation=90)
     plt.subplots_adjust(bottom=0.4)
-    # see better date plotting to fix overlap of x axis label
+
+    plt.ylabel("Wvht")
+    plt.xlabel("Data e hora")
+
     plt.show()
 
+
+# Polinômios são representados como uma lista de coeficientes,
+# em que o índice corresponde ao grau (potência).
+# [1, 2, 7] representa 1 + 2x + 7x^2
 
 def polynomial_multiplication(pA:list, pB:list) -> list:
     result = [0]*(len(pA)+len(pB))
@@ -113,6 +124,7 @@ def convert_timestamps(stamps: list) -> list:
         hours, minutes, seconds = map(int, moment.split(":"))
 
         unix_stamp = datetime.datetime(year, month, day, hours, minutes, seconds).timestamp()
+        # Obtém o tempo como segundos desde a unix epoch, para facilitar operações
 
         if first:
             start = unix_stamp
@@ -125,12 +137,18 @@ def convert_timestamps(stamps: list) -> list:
     return converted
 
 def plot_interpolated_function(polynomial:list, discrete_x:list, discrete_y:list) -> None:
-    plt.scatter(discrete_x, discrete_y)
+    plt.title("Valores de Wvht e polinômio interpolado")
 
     x_vals = np.linspace(min(discrete_x), max(discrete_x), 1000)
     y_vals = apply_list(polynomial, x_vals)
 
-    plt.plot(x_vals, y_vals)
+    plt.plot(x_vals, y_vals, label="Polinômio Wvht")
+    plt.scatter(discrete_x, discrete_y, color="purple", zorder=3, label="Pontos Wvht")
+    plt.ylabel("Wvht")
+    plt.xlabel("Tempo decorrido desde o início, em horas")
+
+    plt.legend(loc="upper left")
+
     plt.show()
 
 
@@ -189,6 +207,8 @@ def main() -> None:
         print("A interpolação polinomial mais próxima é: \n")
         polynomial_printing(result)
         print("\n\n(usando a interpolação de Lagrange)")
+        print("obs: as interpolações polinomiais são numericamente instáveis e suscetíveis")
+        print("a overfitting, o que gera valores inesperados fora dos pontos de treinamento)")
 
         print("\nPlotando gráfico. FECHE A JANELA PARA ENCERRAR PROGRAMA.")
 
