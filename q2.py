@@ -5,6 +5,12 @@ import io
 
 import matplotlib.pyplot as plt
 
+import time
+import datetime
+# Lidam com a conversão das datas em horas de maneira precisa e genérica
+
+import numpy as np
+
 def print_database(file: io.TextIOWrapper) -> None:
     print("Imprimindo tabela:")
     for line in file:
@@ -70,7 +76,7 @@ def polynomial_printing(p:list) -> None:
             print("+", end="")
 
         if index == 0:
-            print(value, end=" ")
+            print(f"{value}", end=" ")
 
         elif index == 1:
             print(f"{value}x", end=" ") if value != 1 else print(f"x", end=" ")
@@ -85,16 +91,48 @@ def get_applied_polynomial(p: list, value: float) -> float:
 
     return acc
 
+def apply_list(p: list, values: list) -> list:
+    applied = []
+    for value in values:
+        applied.append(get_applied_polynomial(p, value))
+
+    return applied
+
 def divide_polynomial_by_value(polynomial: list, value: float) -> list:
     return [polynomial[i]/value for i in range(len(polynomial))]
 
-def convert_timestamp(stamp: str) -> float:
+def convert_timestamps(stamps: list) -> list:
     # Retorna o tempo em horas decorrido desde o início do experimento.
-    pass
 
-def plot_interpolated_function(p:list) -> None:
-    # plotar função polinomial com matplot e pontos discretos. x sendo as horas, y os valores
-    pass
+    converted = [0]
+    first = True
+
+    for stamp in stamps:
+        date, moment = stamp.split()
+        year, month, day = map(int, date.split("-"))
+        hours, minutes, seconds = map(int, moment.split(":"))
+
+        unix_stamp = datetime.datetime(year, month, day, hours, minutes, seconds).timestamp()
+
+        if first:
+            start = unix_stamp
+            first = False
+            continue
+
+        hours_elapsed = (unix_stamp - start) / (60 * 60)
+        converted.append(hours_elapsed)
+        
+    return converted
+
+def plot_interpolated_function(polynomial:list, discrete_x:list, discrete_y:list) -> None:
+    plt.scatter(discrete_x, discrete_y)
+
+    x_vals = np.linspace(min(discrete_x), max(discrete_x), 1000)
+    y_vals = apply_list(polynomial, x_vals)
+
+    plt.plot(x_vals, y_vals)
+    plt.show()
+
 
 def interpolate_data_points(x_points: list, y_points: list) -> None:
     # Usando o algoritmo de lagrange de interpolação polinomial
@@ -129,16 +167,32 @@ def main() -> None:
         minimum = min(wvht)
         maximum = max(wvht)
         average = sum(wvht)/len(wvht)
+        
+        print("\n-------------------")
+        print("Solução do item (a)")
 
         print(f"Valor mínimo: {minimum}")
         print(f"Valor máximo: {maximum}")
         print(f"Valor médio: {average}")
 
-        # plot_wvht(dates, wvht)
+        print("\n-------------------")
+        print("Solução do item (b)")
+        print("FECHE A JANELA PARA CONTINUAR AO ITEM C")
+        plot_wvht(dates, wvht)
 
-        result = interpolate_data_points([0, 1, 2, 3, 5], [4.13, 3.01, 2.79, 3.94, 2.7])
+        print("\n-------------------")
+        print("Solução do item (c)")
+
+        times_elapsed = convert_timestamps(dates)
+        result = interpolate_data_points(times_elapsed, wvht)
+
+        print("A interpolação polinomial mais próxima é: \n")
         polynomial_printing(result)
-        print(get_applied_polynomial(result, 3))
+        print("\n\n(usando a interpolação de Lagrange)")
+
+        print("\nPlotando gráfico. FECHE A JANELA PARA ENCERRAR PROGRAMA.")
+
+        plot_interpolated_function(result, times_elapsed, wvht)
 
 
 # Para evitar confusão com escopo de variáveis
